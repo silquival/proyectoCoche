@@ -7,6 +7,7 @@ import time
 import picamera
 import cv2
 import numpy as np
+from PIL import Image
 
 start = time.time()
 server_ip = '192.168.1.137'
@@ -42,7 +43,7 @@ class WebcamVideoStream:
               self.camera.framerate = self.image_fps
               # Give 2 secs for camera to initilize
               time.sleep(2)                       
-              self.stream = io.BytesIO()
+              self.stream = np.empty((112*128*3,), dtype=np.uint8)
               print('al final del with')
               print(type(self.stream))
 	
@@ -88,12 +89,10 @@ while time.time()- start < recording_time:
 
        print('dentro del while')
        cuadro=wvs.leer()
-       print('tipo de cuadro',type(cuadro))
+       print(type(cuadro))       
        print('despues del read')
-       image_data=cv2.imdecode(np.fromstring(cuadro, dtype=np.uint8),cv2.IMREAD_UNCHANGED)
-       print('tipo del cuadro 2', image_data.shape)
-       cv2.imwrite('cuadro.jpg',image_data)
-       connection.write(struct.pack('<L', cuadro.tell()))
+       cv2.imwrite('cuadro.jpg',cuadro)
+       connection.write(struct.pack('<L', cuadro.where))
        connection.flush()
        cuadro.seek(0)
        connection.write(cuadro.read())
